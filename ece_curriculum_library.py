@@ -112,7 +112,7 @@ def writeGraph(G,outfile):
 
 def readGraph(infile):
     return nx.read_weighted_edgelist(infile)
-    
+
 def addWeightedEdges(G,courses_arr):
     # iterate through every combination
     for i in range(len(courses_arr)):
