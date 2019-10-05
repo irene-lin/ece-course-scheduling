@@ -24,7 +24,7 @@ AREA = DEVICES.union(SIGNALS.union(CIRCUITS.union(HARDWARE.union(SOFTWARE))))
 #array index
 STUDENT_ID = 0
 COURSE = 1
-CLASS = 2
+GRADE = 2
 SEMESTER = 3
 
 
@@ -49,7 +49,7 @@ def writeFile(outfile, arr):
     f_out.close()
 
 # returns a list of students who took a specific course
-def getStudentArrById(data_arr, course):
+def getIdListByCourse(data_arr, course):
     res = []
     for row in data_arr:
         if (row[COURSE] == course):
@@ -67,7 +67,7 @@ def partitionDataById(id_arr, data_arr):
 # get schedules for all students who have taken a specific course and write to file
 def writeCoursePartition(course):
     data_arr = parseFile('data/ECE_Student_Data_Request_9.25.19.csv')
-    student_id_arr = getStudentArrById(data_arr, course)
+    student_id_arr = getIdListByCourse(data_arr, course)
     student_data = partitionDataById(student_id_arr, data_arr)
     writeFile('data/'+course+'_data.csv', student_data)
 
@@ -78,7 +78,7 @@ def writeConcentrationPartition(course_set, concentration_name):
     data_arr = parseFile('data/ECE_Student_Data_Request_9.25.19.csv')
     student_id_arr = []
     for course in course_set:
-        student_id_arr += getStudentArrById(data_arr, course)
+        student_id_arr += getIdListByCourse(data_arr, course)
     student_data = partitionDataById(student_id_arr, data_arr)
     writeFile('data/'+concentration_name+'_concentration_data.csv', student_data)
 
@@ -113,6 +113,8 @@ def writeGraph(G,outfile):
 def readGraph(infile):
     return nx.read_weighted_edgelist(infile)
 
+# draws an edge between every combination of courses in courses_arr
+# courses_arr   list of nodes to draw edges between, entire list should belong to one student
 def addWeightedEdges(G,courses_arr):
     # iterate through every combination
     for i in range(len(courses_arr)):
