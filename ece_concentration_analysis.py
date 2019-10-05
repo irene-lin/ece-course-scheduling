@@ -4,7 +4,6 @@
 # If a student took a course in a particular concentration,
 # what other courses did they take?
 
-import os
 import networkx as nx
 import matplotlib.pyplot as plt
 import ece_curriculum_library as lib
