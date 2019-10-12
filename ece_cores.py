@@ -15,9 +15,12 @@ STUDENT_ID = lib.STUDENT_ID
 COURSE = lib.COURSE
 GRADE = lib.GRADE
 SEMESTER = lib.SEMESTER
+FILEPATH_CORE = 'core'
+FILEPATH_AREA = 'area_coverage'
 
 
-data_arr = lib.parseFile("data/18240_data.csv")
+def getEdgelistPath(prefix, course, grade, semester):
+    return 'networks/%s/%s/edgelist/%s_%s_%s_weighted.edgelist' % (prefix, course[2:], course, grade, sem)
 
 # returns a list of students who took a certrain course
 # during a specific grade and semester
@@ -58,6 +61,7 @@ def buildCoreNetwork(data_arr, core):
             #update id, clear arr
             id = row[STUDENT_ID]
             courses_arr = []
+    print('---------------%s %s %s---------------'%(course, grade, sem))
     print(nx.info(G))
     return G
 
@@ -85,10 +89,10 @@ def getNodeinSet(G, course_set):
 def writeCoreNetwork(data_arr, course, grade, sem):
     student_data = partitionByCourseGradeSemester(data_arr, course, grade, sem)
     G = buildCoreNetwork(student_data, course)
-    lib.writeGraph(G, 'networks/core/' + course + sem + grade + '_weighted.edgelist')
+    lib.writeGraph(G, getEdgelistPath(FILEPATH_CORE, course, grade, sem))
 
 def drawCoreNetwork(course, grade, sem):
-    G = lib.readGraph('networks/core/' + course + sem + grade + '_weighted.edgelist')
+    G = lib.readGraph(getEdgelistPath(FILEPATH_CORE, course, grade, sem))
     pos=nx.spring_layout(G,scale=10)
     for e in nx.edges(G):
         nx.draw_networkx_edges(G,pos,edge_color='b', edgelist=[e],width=G[e[0]][e[1]]['weight']*.05)
@@ -121,16 +125,17 @@ def buildAreaCoverageNetwork(data_arr, core):
             #update id, clear arr
             id = row[STUDENT_ID]
             courses_arr = []
+    print('---------------%s %s %s---------------'%(course, grade, sem))
     print(nx.info(G))
     return G
 
 def writeAreaCoverageNetwork(data_arr, course, grade, sem):
     student_data = partitionByCourseGradeSemester(data_arr, course, grade, sem)
     G = buildAreaCoverageNetwork(student_data, course)
-    lib.writeGraph(G, 'networks/area_coverage/' + course + sem + grade + '_weighted.edgelist')
+    lib.writeGraph(G, getEdgelistPath(FILEPATH_AREA, course, grade, sem))
 
 def drawAreaCoverageNetwork(course, grade, sem):
-    G = lib.readGraph('networks/area_coverage/' + course + sem + grade + '_weighted.edgelist')
+    G = lib.readGraph(getEdgelistPath(FILEPATH_AREA, course, grade, sem))
     pos=nx.spring_layout(G,scale=10)
     for e in nx.edges(G):
         nx.draw_networkx_edges(G,pos,edge_color='b', edgelist=[e],width=G[e[0]][e[1]]['weight']*.05)
@@ -144,18 +149,49 @@ def drawAreaCoverageNetwork(course, grade, sem):
     plt.axis('off')
     plt.title(' '.join([course, sem, grade]))
     plt.show()
-# for course in lib.CORE:
-#     for grade in GRADE_arr:
-#         for sem in SEMESTER_arr:
-#             writeCoreNetwork(data_arr, course, grade, sem)
+
+def printMetrics(G, course, grade, sem):
+    if (len(nx.edges(G))>0):
+        c = nx.average_clustering(G, nodes=None, weight='weight')
+        degree = 0
+        for n in nx.degree(G):
+            degree+=n[1]
+            weighted_degree =0
+            degree = degree / len(nx.nodes(G))
+        for n in nx.degree(G, None, 'weight'):
+            weighted_degree+=n[1]
+            weighted_degree = weighted_degree / len(nx.nodes(G))
+    else:
+        c = 0
+        degree = 0
+        weighted_degree = 0
+    print('%s %s %s\t%d\t%d\t%f\t%f\t%f\t%d\t%d'%(course, grade, sem,
+    len(nx.nodes(G)),
+    len(nx.edges(G)),
+    degree,
+    weighted_degree,
+    c,
+    sum((nx.triangles(G)).values()),
+    len(getIdListByCourseGradeSemester(data_arr, course, grade, sem))
+    ))
+
+
+data_arr = lib.parseFile("data/ECE_Student_Data_Request_9.25.19.csv")
+
+for course in lib.CORE:
+    for grade in GRADE_arr:
+        for sem in SEMESTER_arr:
+            G = lib.readGraph(getEdgelistPath(FILEPATH_CORE, course, grade, sem))
+            printMetrics(G, course, grade, sem)
+
 # for course in lib.CORE:
 #     for grade in GRADE_arr:
 #         for sem in SEMESTER_arr:
 #             writeAreaCoverageNetwork(data_arr, course, grade, sem)
 # drawCoreNetwork('18240', '2', 'S')
 
-for course in lib.CORE:
-    for grade in GRADE_arr:
-        for sem in SEMESTER_arr:
-            drawCoreNetwork(course, grade, sem)
-            drawAreaCoverageNetwork(course, grade, sem)
+# for course in ["18290", "18220"]:
+#     for grade in GRADE_arr:
+#         for sem in SEMESTER_arr:
+#             drawCoreNetwork(course, grade, sem)
+#             drawAreaCoverageNetwork(course, grade, sem)

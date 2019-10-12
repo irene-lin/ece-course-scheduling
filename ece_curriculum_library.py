@@ -17,7 +17,7 @@ COVERAGE = {"15210", "15312", "15281", "15394", "15410", "15411", "15412",
             "15415", "15418", "15440", "15441", "15445", "15451", "15453",
             "15462", "15463", "15466", "16384", "16385", "17214", "17313",
             "17437"}
-CORE = {"18213", "18220", "18240", "18290"}
+CORE = ["18213", "18220", "18240", "18290"]
 TECH_REQS = {"18202", "15122", "15112", "21127"} #technical requirements
 CAPSTONE = {"18500"}
 AREA = DEVICES.union(SIGNALS.union(CIRCUITS.union(HARDWARE.union(SOFTWARE))))
@@ -129,3 +129,17 @@ def addWeightedEdges(G,courses_arr):
             else:
                 G.add_edge(course1, course2, weight=1)
     return G
+
+# input infile is path to edgelist
+# input outfile is path to csv
+def edgelistToCSV(infile, outfile):
+    f_in = open(infile, "r")
+    txt_in = f_in.read()
+    f_in_arr = txt_in.split("\n")[:-1]
+    f_in.close()
+    f_out = open(outfile, "w")
+    f_out.write("Source,Target,Weight\n")
+    for line in f_in_arr:
+        f_out.write(','.join(line.split()))
+        f_out.write("\n")
+    f_out.close()
