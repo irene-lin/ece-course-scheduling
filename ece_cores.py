@@ -1,7 +1,7 @@
-# ece_18240.py
+# ece_cores.py
 # Irene Lin iwl@andrew.cmu.edu
-# data_set = students who took 18240
-# partition by which semester they took 18240
+# data_set = students who took a specific core
+# partition by which semester they took the core
 # map when other cores were taken
 # map which other area/coverage courses were taken
 
