@@ -74,15 +74,6 @@ def getNodesWithPrefix(G, prefix):
         if (n[:len(prefix)] == prefix): res.append(n)
     return res
 
-# returns a list of nodes in a graph that are in a specific set of courses
-# G graph
-# course_set set of courses for area or concentration
-def getNodeinSet(G, course_set):
-    res = []
-    for n in nx.nodes(G):
-        if (n in course_set): res.append(n)
-    return res
-
 # course    course number string
 # grade     class (fr/so/jr/sr)
 # sem       fall/spring
@@ -140,11 +131,11 @@ def drawAreaCoverageNetwork(course, grade, sem):
     for e in nx.edges(G):
         nx.draw_networkx_edges(G,pos,edge_color='b', edgelist=[e],width=G[e[0]][e[1]]['weight']*.05)
     nx.draw_networkx_nodes(G,pos,node_size=400, node_color='#dddddd', node_shape='o')
-    nx.draw_networkx_nodes(G,pos,nodelist=getNodeinSet(G,lib.DEVICES),node_size=400, node_color='#66ffff', node_shape='o')
-    nx.draw_networkx_nodes(G,pos,nodelist=getNodeinSet(G,lib.CIRCUITS),node_size=400, node_color='#99ff66', node_shape='o')
-    nx.draw_networkx_nodes(G,pos,nodelist=getNodeinSet(G,lib.HARDWARE),node_size=400, node_color='#ffff00', node_shape='o')
-    nx.draw_networkx_nodes(G,pos,nodelist=getNodeinSet(G,lib.SOFTWARE),node_size=400, node_color='#ff9999', node_shape='o')
-    nx.draw_networkx_nodes(G,pos,nodelist=getNodeinSet(G,lib.SIGNALS),node_size=400, node_color='#9999ff', node_shape='o')
+    nx.draw_networkx_nodes(G,pos,nodelist=lib.getNodeinSet(G,lib.DEVICES),node_size=400, node_color='#66ffff', node_shape='o')
+    nx.draw_networkx_nodes(G,pos,nodelist=lib.getNodeinSet(G,lib.CIRCUITS),node_size=400, node_color='#99ff66', node_shape='o')
+    nx.draw_networkx_nodes(G,pos,nodelist=lib.getNodeinSet(G,lib.HARDWARE),node_size=400, node_color='#ffff00', node_shape='o')
+    nx.draw_networkx_nodes(G,pos,nodelist=lib.getNodeinSet(G,lib.SOFTWARE),node_size=400, node_color='#ff9999', node_shape='o')
+    nx.draw_networkx_nodes(G,pos,nodelist=lib.getNodeinSet(G,lib.SIGNALS),node_size=400, node_color='#9999ff', node_shape='o')
     nx.draw_networkx_labels(G,pos,font_size=6)
     plt.axis('off')
     plt.title(' '.join([course, sem, grade]))
