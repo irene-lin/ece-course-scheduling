@@ -104,6 +104,14 @@ def getFrequencyList():
         if (tup[0][:2] in {'18', '15', '17'}):
             print(tup)
 
+# returns a list of nodes in a graph that are in a specific set of courses
+# G graph
+# course_set set of courses for area or concentration
+def getNodeinSet(G, course_set):
+    res = []
+    for n in nx.nodes(G):
+        if (n in course_set): res.append(n)
+    return res
 # ----------------------------------------------------------------------------
 # ANALYSIS FUNCTIONS
 
@@ -117,6 +125,7 @@ def readGraph(infile):
 # courses_arr   list of nodes to draw edges between, entire list should belong to one student
 def addWeightedEdges(G,courses_arr):
     # iterate through every combination
+    if (len(courses_arr) == 1): G.add_node(courses_arr[0])
     for i in range(len(courses_arr)):
         for j in range(i+1, len(courses_arr)):
             course1 = courses_arr[i]
