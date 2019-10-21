@@ -20,28 +20,28 @@ SEMESTER_arr = ["F14", "S15", "F15", "S16", "F16", "S17", "F17", "S18", "F18", "
 
 data_arr = lib.parseFile("data/ECE_Student_Data_Request_9.25.19.csv")
 
-def getEdgelistPath(sem):
-    return 'networks/capstone/edgelist/%s_capstone_weighted.edgelist' % sem
+def getEdgelistPath(semester_fall, semester_spring):
+    return 'networks/capstone/edgelist/%s_%s_capstone_weighted.edgelist' % (semester_fall, semester_spring)
 
 # return list of id numbers for students who took capstone during specific semester
 # data_arr all data
 # semester string from SEMESTER_arr
-def getIdListByCapstoneSemester(data_arr, semester):
+def getIdListByCapstoneSemester(data_arr, semester_fall, semester_spring):
     id_arr = []
     for row in data_arr:
-        if (row[COURSE] in CAPSTONE and row[SEMESTER] in semester):
+        if (row[COURSE] in CAPSTONE and row[SEMESTER] in (semester_fall + semester_spring)):
              id_arr.append(row[STUDENT_ID])
     return id_arr
 
 # data_arr all data
 # semester string from SEMESTER_arr
-def getCapstoneDataArr(data_arr, semester):
-    id_arr = getIdListByCapstoneSemester(data_arr, semester)
+def getCapstoneDataArr(data_arr, semester_fall, semester_spring):
+    id_arr = getIdListByCapstoneSemester(data_arr, semester_fall, semester_spring)
     capstone_data_arr = lib.partitionDataById(id_arr, data_arr)
     return capstone_data_arr
 
-def buildCapstoneNetwork(data_arr, semester):
-    capstone_data_arr = getCapstoneDataArr(data_arr, semester)
+def buildCapstoneNetwork(data_arr, semester_fall, semester_spring):
+    capstone_data_arr = getCapstoneDataArr(data_arr, semester_fall, semester_spring)
     id = 1
     courses_arr = []
     G = nx.Graph()
@@ -58,7 +58,7 @@ def buildCapstoneNetwork(data_arr, semester):
     # print(nx.info(G))
     return G
 
-def printMetrics(G, data_arr, sem):
+def printMetrics(G, data_arr, semester_fall, semester_spring):
     if (len(nx.edges(G))>0):
         c = nx.average_clustering(G, nodes=None, weight='weight')
         degree = 0
@@ -73,25 +73,27 @@ def printMetrics(G, data_arr, sem):
         c = 0
         degree = 0
         weighted_degree = 0
-    print('capstone %s\t'               %sem,
+    print('capstone %s %s\t'               % (semester_fall, semester_spring),
           'nodes: %d\t'                 % len(nx.nodes(G)),
           'edges: %d\t '                % len(nx.edges(G)),
           'avg degree: %f\t'            % degree,
           'avgweighted degree: %f\t'    % weighted_degree,
           'avg weighted clustering %f\t'% c,
           'weighted triangles: %d\t'    % sum((nx.triangles(G)).values()),
-          'num students: %d'            % len(getIdListByCapstoneSemester(data_arr, sem))
+          'num students: %d'            % len(getIdListByCapstoneSemester(data_arr, semester_fall, semester_spring))
           )
 
-def writeCapstoneNetwork(data_arr, sem):
-    G = buildCapstoneNetwork(data_arr, sem)
-    lib.writeGraph(G, getEdgelistPath(sem))
-    printMetrics(G, data_arr, sem)
-    #lib.edgelistToCSV(getEdgelistPath(sem), 'networks/capstone/csv/%s_capstone_weighted.csv' % sem)
+def writeCapstoneNetwork(data_arr, semester_fall, semester_spring):
+    G = buildCapstoneNetwork(data_arr, semester_fall, semester_spring)
+    lib.writeGraph(G, getEdgelistPath(semester_fall, semester_spring))
+    printMetrics(G, data_arr, semester_fall, semester_spring)
+    lib.edgelistToCSV(getEdgelistPath(semester_fall, semester_spring),
+                     'networks/capstone/csv/%s_%s_capstone_weighted.csv'
+                     % (semester_fall, semester_spring))
 
 
-def drawCapstoneNetwork(sem):
-    G = lib.readGraph(getEdgelistPath(sem))
+def drawCapstoneNetwork(semester_fall, semester_spring):
+    G = lib.readGraph(getEdgelistPath(semester_fall, semester_spring))
     pos=nx.spring_layout(G,scale=10)
     for e in nx.edges(G):
         nx.draw_networkx_edges(G,pos,edge_color='b', edgelist=[e],width=G[e[0]][e[1]]['weight']*.1)
@@ -103,10 +105,12 @@ def drawCapstoneNetwork(sem):
     nx.draw_networkx_nodes(G,pos,nodelist=lib.getNodeinSet(G,lib.SIGNALS),node_size=400, node_color='#9999ff', node_shape='o')
     nx.draw_networkx_labels(G,pos,font_size=6)
     plt.axis('off')
-    # plt.title(' '.join([course, sem, grade]))
+    plt.title('Capstone %s %s' %(semester_fall, semester_spring))
     plt.show()
 
 
 # drawCapstoneNetwork()
-for sem in SEMESTER_arr:
-    writeCapstoneNetwork(data_arr, sem)
+# SEMESTER_arr.reverse()
+for i in range(0, len(SEMESTER_arr), 2):
+    # writeCapstoneNetwork(data_arr, SEMESTER_arr[i], SEMESTER_arr[i+1])
+    drawCapstoneNetwork(SEMESTER_arr[i], SEMESTER_arr[i+1])
