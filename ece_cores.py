@@ -168,21 +168,17 @@ def printMetrics(G, course, grade, sem):
 
 
 data_arr = lib.parseFile("data/ECE_Student_Data_Request_9.25.19.csv")
-
+'''
 for course in lib.CORE:
     for grade in GRADE_arr:
         for sem in SEMESTER_arr:
-            G = lib.readGraph(getEdgelistPath(FILEPATH_CORE, course, grade, sem))
-            printMetrics(G, course, grade, sem)
-
-# for course in lib.CORE:
-#     for grade in GRADE_arr:
-#         for sem in SEMESTER_arr:
-#             writeAreaCoverageNetwork(data_arr, course, grade, sem)
-# drawCoreNetwork('18240', '2', 'S')
-
-# for course in ["18290", "18220"]:
-#     for grade in GRADE_arr:
-#         for sem in SEMESTER_arr:
-#             drawCoreNetwork(course, grade, sem)
-#             drawAreaCoverageNetwork(course, grade, sem)
+            G = lib.readGraph(getEdgelistPath(FILEPATH_AREA, course, grade, sem))
+            # printMetrics(G, course, grade, sem)
+            # writeAreaCoverageNetwork(data_arr, course, grade, sem)
+            deg = nx.degree(G)
+            # print(sorted(deg, key=lambda tup: tup[1], reverse=True)[:4])
+            # a = []
+            # for e in nx.edges(G):
+            #     a.append((e[0], e[1], G[e[0]][e[1]]['weight']))
+            # print(sorted(a, key=lambda tup: tup[2], reverse=True)[:4])
+'''
