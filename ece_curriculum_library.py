@@ -100,9 +100,10 @@ def getFrequencyList():
     for c in d:
         arr.append((c, d[c]))
     sorted_by_second = sorted(arr, key=lambda tup: tup[1], reverse=True)
-    for tup in sorted_by_second:
-        if (tup[0][:2] in {'18', '15', '17'}):
-            print(tup)
+    # for tup in sorted_by_second:
+    #     if (tup[0][:2] in {'18', '15', '17'}):
+    #         print(tup)
+    return sorted_by_second
 
 # returns a list of nodes in a graph that are in a specific set of courses
 # G graph
@@ -137,6 +138,16 @@ def addWeightedEdges(G,courses_arr):
             #add to network with weight 1
             else:
                 G.add_edge(course1, course2, weight=1)
+    return G
+
+def addWeightedEdge(G,id1,id2):
+    #incr weight
+    if ((id1,id2) in nx.edges(G)):
+        new_weight = G[id1][id2]['weight'] + 1
+        G.add_edge(id1, id2, weight=new_weight)
+    #add to network with weight 1
+    else:
+        G.add_edge(id1, id2, weight=1)
     return G
 
 # input infile is path to edgelist
