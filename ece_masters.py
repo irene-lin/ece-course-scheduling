@@ -103,5 +103,18 @@ def buildGradNetworkAllConcentrations(data_arr):
     print(nx.info(G))
     return G
 
-G = buildGradNetworkAllConcentrations(grad_data_arr)
-drawGradNetworkAll(G, 'Graduate Students, Concentrations only')
+def getCourseCounts(data_arr):
+    d = dict()
+    for line in data_arr:
+        if (line[COURSE] in d and line[GRADE]=='10'):
+            d[line[COURSE]] += 1
+        else:
+            d[line[COURSE]] = 1
+    a = []
+    for key in d:
+        a.append((key,d[key]))
+    a = sorted(a, key=lambda tup: tup[1], reverse=True)
+    return a
+
+# G = buildGradNetworkAllConcentrations(grad_data_arr)
+# drawGradNetworkAll(G, 'Graduate Students, Concentrations only')
