@@ -1,13 +1,14 @@
 # ece_cores_communities.py
 # Irene Lin iwl@andrew.cmu.edu
-
-#nodes are students, edges are classes taken together
-
+# Outputs which cores were taken in the same semester by a student and how many
+# students took both cores in that semester. Builds a weighted graph with
+# students as nodes and a weighted edge is drawn between students representing
+# the number of core classes taken at the same time.
 
 import networkx as nx
 import matplotlib.pyplot as plt
 import ece_curriculum_library as lib
-import ece_cores as cores
+import matplotlib.pyplot as plt
 
 STUDENT_ID = lib.STUDENT_ID
 COURSE = lib.COURSE
@@ -16,12 +17,6 @@ SEMESTER = lib.SEMESTER
 
 #get data_set
 data_arr = lib.parseFile("data/ECE_Student_Data_Request_9.25.19.csv")
-
-def getEdgelistPath(prefix, suffix):
-    return 'networks/%s/cores_community_%s.edgelist' % (prefix, suffix)
-
-def getCSVPath(prefix, suffix):
-    return 'networks/%s/cores_community_%s.csv' % (prefix, suffix)
 
 #build dictionary of student id to set of courses
 def getDictionary(data_arr):
@@ -65,24 +60,6 @@ def countDoubles():
                 double_counts[double] = 1
     print(double_counts)
 
-#for all students in dictionary, draw weighted edges to every other student that took a similar course
-def buildGraph(data_arr):
-    G = nx.Graph()
-    d = getDictionary(data_arr)
-    for i in range(1,5057+1):
-        for j in range(i+1, 5057+1):
-            (id1, id2) = (str(i), str(j))
-            if (id1 in d and id2 in d):
-                course_set1 = d[id1]
-                course_set2 = d[id2]
-                intersection = course_set1.intersection(course_set2)
-                count = 0
-                for c in intersection:
-                    if (c[:5] in lib.CORE): count+=1
-                if count==4: G.add_edge(id1, id2)
-    print(nx.info(G))
-    return G
-
 def buildGraphWithIdList(data_arr, id_list):
     G = nx.Graph()
     d = getDictionary(data_arr)
@@ -98,30 +75,3 @@ def buildGraphWithIdList(data_arr, id_list):
             if count==1: G.add_edge(id1, id2)
     print(nx.info(G))
     return G
-
-def writeCoreNetwork(data_arr, suffix, id_list=None):
-    if id_list==None: G = buildGraph(data_arr)
-    else: G = buildGraphWithIdList(data_arr, id_list)
-    lib.writeGraph(G, getEdgelistPath(cores.FILEPATH_CORE, suffix))
-    lib.edgelistToCSV(getEdgelistPath(cores.FILEPATH_CORE, suffix), getCSVPath(cores.FILEPATH_CORE, suffix))
-
-
-#draw network
-def drawCoreNetwork(suffix):
-    G = lib.readGraph(getEdgelistPath(cores.FILEPATH_CORE, suffix))
-    pos=nx.spring_layout(G,scale=10)
-    nx.draw_networkx_edges(G,pos,edge_color='b')
-    nx.draw_networkx_nodes(G,pos,node_size=400, node_color='#dddddd', node_shape='o')
-    nx.draw_networkx_labels(G,pos,font_size=6)
-    plt.axis('off')
-    plt.show()
-
-# writeCoreNetwork(data_arr, 'all', id_list)
-# G = lib.readGraph(getEdgelistPath(cores.FILEPATH_CORE, 'all'))
-# drawCoreNetwork('all')
-# deg = sorted(nx.degree(G), key=lambda tup: tup[1], reverse=True)
-# a = []
-# for (id,degree) in deg:
-#     if d[id] not in a and degree==1:
-#         a.append(d[id])
-#         print(id, d[id])

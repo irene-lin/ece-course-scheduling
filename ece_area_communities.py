@@ -1,13 +1,12 @@
 # ece_area_communities.py
 # Irene Lin iwl@andrew.cmu.edu
-
-#nodes are students, edges are classes taken together
-
+# Builds a network or students and draws an edge between two students if they
+# have n or more area/coverage courses in common where n is a parameter for
+# similarity threshold.
 
 import networkx as nx
 import matplotlib.pyplot as plt
 import ece_curriculum_library as lib
-import ece_cores as cores
 
 STUDENT_ID = lib.STUDENT_ID
 COURSE = lib.COURSE
@@ -33,7 +32,7 @@ def getDictionary(data_arr):
     id = '1'
     a = []
     for line in data_arr:
-        if (line[COURSE] in lib.AREA):# and line[COURSE] not in COMMON_AREA):
+        if (line[COURSE] in lib.AREA_COV):
             if line[STUDENT_ID] == id:
                 a.append(line[COURSE])
             else:
@@ -48,30 +47,32 @@ def getDictionary(data_arr):
     # print(counts)
     return d
 
-#for all students in dictionary, draw weighted edges to every other student that took a similar course
-def buildGraph(data_arr, intersection_size):
+#for all students in dictionary, draw weighted edges to
+#every other student that took the same course
+def buildGraph(data_arr, sim_thresh):
     G = nx.Graph()
     d = getDictionary(data_arr)
     for i in range(1,5057+1):
+        if i in d: G.add_node(i)
         for j in range(i+1, 5057+1):
             (id1, id2) = (str(i), str(j))
             if (id1 in d and id2 in d):
                 course_set1 = d[id1]
                 course_set2 = d[id2]
                 intersection = course_set1.intersection(course_set2)
-                if (len(intersection) >= intersection_size):
+                if (len(intersection) >= sim_thresh):
                     G.add_edge(id1, id2, weight=len(intersection))
     print(nx.info(G))
     return G
 
-def writeCoreNetwork(data_arr, intersection_size):
-    G = buildGraph(data_arr, intersection_size)
-    lib.writeGraph(G, getEdgelistPath(FILEPATH_AREA, str(intersection_size)))
-    lib.edgelistToCSV(getEdgelistPath(FILEPATH_AREA, str(intersection_size)),
-                                            getCSVPath(FILEPATH_AREA, str(intersection_size)))
+def writeAreaNetwork(data_arr, sim_thresh):
+    G = buildGraph(data_arr, sim_thresh)
+    lib.writeGraph(G, getEdgelistPath(FILEPATH_AREA, str(sim_thresh)))
+    lib.edgelistToCSV(getEdgelistPath(FILEPATH_AREA, str(sim_thresh)),
+                                            getCSVPath(FILEPATH_AREA, str(sim_thresh)))
 
-def drawNetwork(data_arr, intersection_size):
-    G = lib.readGraph(getEdgelistPath(FILEPATH_AREA, str(intersection_size)))
+def drawNetwork(data_arr, sim_thresh):
+    G = lib.readGraph(getEdgelistPath(FILEPATH_AREA, str(sim_thresh)))
     pos=nx.spring_layout(G,scale=10)
     nx.draw_networkx_edges(G,pos,edge_color='b')
     nx.draw_networkx_nodes(G,pos,node_size=400, node_color='#dddddd', node_shape='o')
@@ -79,39 +80,27 @@ def drawNetwork(data_arr, intersection_size):
     plt.axis('off')
     plt.show()
 
-def getNodeCentralitySorted(G):
-    d = nx.betweenness_centrality(G)
-    a = []
-    for node in d:
-        a.append((node,d[node]))
-    return sorted(a, key=lambda tup: tup[1], reverse=True)
+# plot rank vs degree
+def degreeRankPlot(G):
+    sorted_by_second = sorted(nx.degree(G), key=lambda tup: tup[1], reverse=True)
+    rank_freq = [x[1] for x in sorted_by_second]
+    _ = plt.plot(rank_freq)
+    plt.title("degree rank")
+    plt.show()
 
-def getEdgeCentralitySorted(G):
-    d = nx.edge_betweenness_centrality(G)
-    a = []
-    for edge in d:
-        a.append((edge,d[edge]))
-    return sorted(a, key=lambda tup: tup[1], reverse=True)
+def getDegreeRankArr(G):
+    sorted_by_second = sorted(nx.degree(G), key=lambda tup: tup[1], reverse=True)
+    return sorted_by_second
 
+def printAreaCovRankConditionedByIdList(sim_thresh, data_arr, infile):
+    d = getDictionary(data_arr)
+    G = lib.readGraph(getEdgelistPath(FILEPATH_AREA, str(sim_thresh)))
+    sorted_by_second = sorted(nx.degree(G), key=lambda tup: tup[1], reverse=True)
+    f_in = open(infile, "r")
+    arr = f_in.read().split()
+    for i in range(len(sorted_by_second)):
+        id,deg = sorted_by_second[i]
+        if id in arr: print(i+1,",", id,",",deg)
 
-# drawNetwork(data_arr, 3)
-
-d = getDictionary(data_arr)
-# print(d['372'].intersection(d['921']))
-# print(d['372'].intersection(d['2300']))
-# print(d['921'].intersection(d['2300']))
-print(2897, d['2897'])
-print(846, d['846'])
-print(1116, d['1116'])
-
-print(d['846'].intersection(d['3449']))
-print(d['1116'].intersection(d['3449']))
-print(d['846'].intersection(d['2897']))
-
-# for i in range (2,7):
-#     writeCoreNetwork(data_arr, i)
-# intersection_size = 5
-# G = lib.readGraph(getEdgelistPath(FILEPATH_AREA, str(intersection_size)))
-# print(getNodeCentralitySorted(G))
-# print(getEdgeCentralitySorted(G))
-# print(2897, d['2897'], 846, d['846'], 1116, d['1116'])
+drawNetwork(data_arr, 5)
+writeAreaNetwork(data_arr, 5)

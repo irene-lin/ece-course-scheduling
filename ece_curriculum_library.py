@@ -1,7 +1,7 @@
 # ece_curriculum_library.py
 # Irene Lin iwl@andrew.cmu.edu
 # This file contains helper functions used across all build and analysis files.
-# This file also contains constants
+# This file also contains constants.
 
 import networkx as nx
 
@@ -18,16 +18,15 @@ COVERAGE = {"15210", "15312", "15281", "15394", "15410", "15411", "15412",
             "15462", "15463", "15466", "16384", "16385", "17214", "17313",
             "17437"}
 CORE = ["18213", "18220", "18240", "18290"]
-TECH_REQS = {"18202", "15122", "15112", "21127"} #technical requirements
-CAPSTONE = {"18500"}
+
 AREA = DEVICES.union(SIGNALS.union(CIRCUITS.union(HARDWARE.union(SOFTWARE))))
-#array index
+AREA_COV = AREA.union(COVERAGE)
+
+#array indices
 STUDENT_ID = 0
 COURSE = 1
 GRADE = 2
 SEMESTER = 3
-
-
 
 # given a path to a csv file, returns 2D array
 def parseFile(infile):
@@ -49,11 +48,15 @@ def writeFile(outfile, arr):
     f_out.close()
 
 # returns a list of students who took a specific course
-def getIdListByCourse(data_arr, course):
+def getIdListByCourse(data_arr, course, only_ugrad=False):
     res = []
     for row in data_arr:
         if (row[COURSE] == course):
-            if (row[STUDENT_ID] not in res): res.append(row[STUDENT_ID])
+            if (row[STUDENT_ID] not in res):
+                if (only_ugrad == True):
+                    if(int(row[GRADE]) <= 4): res.append(row[STUDENT_ID])
+                else:
+                    res.append(row[STUDENT_ID])
     return res
 
 # return all schedule data for every student in id_arr
@@ -81,12 +84,6 @@ def writeConcentrationPartition(course_set, concentration_name):
         student_id_arr += getIdListByCourse(data_arr, course)
     student_data = partitionDataById(student_id_arr, data_arr)
     writeFile('data/'+concentration_name+'_concentration_data.csv', student_data)
-
-writeConcentrationPartition(DEVICES, "devices")
-writeConcentrationPartition(CIRCUITS, "circuits")
-writeConcentrationPartition(HARDWARE, "hardware")
-writeConcentrationPartition(SOFTWARE, "software")
-writeConcentrationPartition(SIGNALS, "signals")
 
 def getFrequencyList():
     data_arr = parseFile('data/ECE_Student_Data_Request_9.25.19.csv')
@@ -163,3 +160,17 @@ def edgelistToCSV(infile, outfile):
         f_out.write(','.join(line.split()))
         f_out.write("\n")
     f_out.close()
+
+def getNodeCentralitySorted(G):
+    d = nx.betweenness_centrality(G)
+    a = []
+    for node in d:
+        a.append((node,d[node]))
+    return sorted(a, key=lambda tup: tup[1], reverse=True)
+
+def getEdgeCentralitySorted(G):
+    d = nx.edge_betweenness_centrality(G)
+    a = []
+    for edge in d:
+        a.append((edge,d[edge]))
+    return sorted(a, key=lambda tup: tup[1], reverse=True)
